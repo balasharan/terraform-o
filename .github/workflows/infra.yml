@@ -54,6 +54,8 @@ jobs:
             
             terraform apply -auto-approve -var='environments_to_deploy=["qa","dev"]'
           fi
-          sleep 300
-          terraform destroy
+          echo "infra got provisioned"
+          echo "sleeping for 2 minutes"
+          sleep 120
+          
           
