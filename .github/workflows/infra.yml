@@ -1,0 +1,58 @@
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Choose environment (dev, qa, or both)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - qa
+          - both
+
+jobs:
+  terraform:
+    name: Terraform Deployment
+   
+    runs-on: [self-hosted, linux]
+
+
+    env:
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
+            terraform plan -var="environment=dev"
+          elif [[ "${{ github.event.inputs.environment }}" == "qa" ]]; then
+            terraform plan -var="environment=qa"
+          else
+            terraform plan -var="environment=dev" -var="environment=qa"
+          fi
+
+      - name: Terraform Apply
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
+            terraform apply -auto-approve -var="environment=dev"
+          elif [[ "${{ github.event.inputs.environment }}" == "qa" ]]; then
+            terraform apply -auto-approve -var="environment=qa"
+          else
+            terraform apply -auto-approve -var="environment=dev" -var="environment=qa"
+          fi
