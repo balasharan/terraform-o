@@ -17,7 +17,7 @@ jobs:
   terraform:
     name: Terraform Deployment
    
-    runs-on: [self-hosted, linux, macOS, X64]
+    runs-on: [ macOS ]
 
 
 
